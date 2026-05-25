@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimalist To-Do List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">My Tasks 📋</h1>
+        <p class="text-gray-500 text-sm mb-6">Catat dan selesaikan tugas harianmu.</p>
+
+        <div class="flex gap-2 mb-6">
+            <input type="text" id="taskInput" placeholder="Tambah tugas baru..." 
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700">
+            <button onclick="addTask()" 
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium transition-colors">
+                Tambah
+            </button>
+        </div>
+
+        <ul id="taskList" class="space-y-3">
+            </ul>
+    </div>
+
+    <script>
+        // Ambil data dari LocalStorage saat halaman pertama kali dibuka
+        let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
+
+        // Fungsi untuk menampilkan ulang seluruh daftar tugas
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = ''; // Kosongkan list lama
+
+            if (tasks.length === 0) {
+                taskList.innerHTML = `<li class="text-center text-gray-400 py-4 text-sm">Belum ada tugas hari ini. Belanja dulu gih!</li>`;
+                return;
+            }
+
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = `flex items-center justify-between p-3 rounded-xl border transition-all ${task.completed ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-100 shadow-sm'}`;
+
+                li.innerHTML = `
+                    <div class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleTask(${index})">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} class="w-4 h-4 text-blue-600 rounded">
+                        <span class="text-gray-700 ${task.completed ? 'line-through text-gray-400' : ''}">${task.text}</span>
+                    </div>
+                    <button onclick="deleteTask(${index})" class="text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors text-sm">
+                        🗑️
+                    </button>
+                `;
+                taskList.appendChild(li);
+            });
+
+            // Simpan setiap ada perubahan data
+            localStorage.setItem('myTasks', JSON.stringify(tasks));
+        }
+
+        // Fungsi menambah tugas baru
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+            
+            if (text !== '') {
+                tasks.push({ text: text, completed: false });
+                input.value = ''; // Kosongkan input
+                renderTasks();
+            }
+        }
+
+        // Fungsi menandai tugas selesai/belum selesai
+        function toggleTask(index) {
+            tasks[index].completed = !tasks[index].completed;
+            renderTasks();
+        }
+
+        // Fungsi menghapus tugas
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            renderTasks();
+        }
+
+        // Jalankan fungsi render pertama kali saat web dibuka
+        renderTasks();
+    </script>
+</body>
+</html>
