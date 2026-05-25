@@ -3,87 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimalist To-Do List</title>
+    <title>Daily Task Checklist</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
 
-    <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md">
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">My Tasks 📋</h1>
-        <p class="text-gray-500 text-sm mb-6">Catat dan selesaikan tugas harianmu.</p>
+    <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-lg border border-slate-100">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-slate-800">Daftar Tugas Harian 📊</h1>
+            <p class="text-slate-400 text-sm mt-1">Status ceklis otomatis tersimpan di browser.</p>
+        </div>
 
-        <div class="flex gap-2 mb-6">
-            <input type="text" id="taskInput" placeholder="Tambah tugas baru..." 
-                class="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700">
+        <ul id="taskList" class="space-y-3 mb-6">
+            </ul>
+
+        <div class="flex gap-2 pt-4 border-t border-slate-100">
+            <input type="text" id="taskInput" placeholder="Tambah tugas manual..." 
+                class="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700">
             <button onclick="addTask()" 
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium transition-colors">
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors">
                 Tambah
             </button>
         </div>
-
-        <ul id="taskList" class="space-y-3">
-            </ul>
     </div>
 
     <script>
-        // Ambil data dari LocalStorage saat halaman pertama kali dibuka
-        let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
+        // 1. DAFTAR TUGAS UTAMA (Sesuai gambar yang kamu kirim)
+        const initialTasks = [
+            { text: "Cek Saldo iklan semua akun (cantik, daily, find, dapur, racoen)", completed: false },
+            { text: "Analisa akun rahasia cantik", completed: false },
+            { text: "Analisa akun daily checkout", completed: false },
+            { text: "Analisa akun find ur fav", completed: false },
+            { text: "Analisa akun dapur cantik", completed: false },
+            { text: "Analisa akun racoen shoping", completed: false },
+            { text: "Iklan", completed: false }
+        ];
 
-        // Fungsi untuk menampilkan ulang seluruh daftar tugas
+        // 2. Logika pengambilan data dari LocalStorage browser
+        let tasks = JSON.parse(localStorage.getItem('marketingTasks'));
+        
+        // Jika belum ada data tersimpan di browser, gunakan list utama di atas
+        if (!tasks) {
+            tasks = initialTasks;
+            localStorage.setItem('marketingTasks', JSON.stringify(tasks));
+        }
+
+        // Fungsi untuk menampilkan daftar tugas ke layar
         function renderTasks() {
             const taskList = document.getElementById('taskList');
-            taskList.innerHTML = ''; // Kosongkan list lama
+            taskList.innerHTML = ''; // Reset tampilan lama
 
             if (tasks.length === 0) {
-                taskList.innerHTML = `<li class="text-center text-gray-400 py-4 text-sm">Belum ada tugas hari ini. Belanja dulu gih!</li>`;
+                taskList.innerHTML = `<li class="text-center text-slate-400 py-6 text-sm">Semua tugas telah dihapus.</li>`;
                 return;
             }
 
             tasks.forEach((task, index) => {
                 const li = document.createElement('li');
-                li.className = `flex items-center justify-between p-3 rounded-xl border transition-all ${task.completed ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-100 shadow-sm'}`;
+                // Mengubah tampilan item jika sudah diceklis (agak pudar)
+                li.className = `flex items-center justify-between p-3.5 rounded-xl border transition-all ${
+                    task.completed ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-100 shadow-sm'
+                }`;
 
                 li.innerHTML = `
                     <div class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleTask(${index})">
-                        <input type="checkbox" ${task.completed ? 'checked' : ''} class="w-4 h-4 text-blue-600 rounded">
-                        <span class="text-gray-700 ${task.completed ? 'line-through text-gray-400' : ''}">${task.text}</span>
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} 
+                            class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 pointer-events-none">
+                        <span class="text-slate-700 text-sm font-medium ${task.completed ? 'line-through text-slate-400' : ''}">
+                            ${task.text}
+                        </span>
                     </div>
-                    <button onclick="deleteTask(${index})" class="text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors text-sm">
-                        🗑️
+                    <button onclick="deleteTask(${index}); event.stopPropagation();" 
+                        class="text-slate-300 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors text-xs" title="Hapus Manual">
+                        ❌
                     </button>
                 `;
                 taskList.appendChild(li);
             });
 
-            // Simpan setiap ada perubahan data
-            localStorage.setItem('myTasks', JSON.stringify(tasks));
+            // Simpan setiap ada perubahan (ceklis/tambah/hapus)
+            localStorage.setItem('marketingTasks', JSON.stringify(tasks));
         }
 
-        // Fungsi menambah tugas baru
+        // Fungsi mengubah status ceklis
+        function toggleTask(index) {
+            tasks[index].completed = !tasks[index].completed;
+            renderTasks();
+        }
+
+        // Fungsi menghapus tugas secara manual
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            renderTasks();
+        }
+
+        // Fungsi menambah tugas baru di luar daftar utama
         function addTask() {
             const input = document.getElementById('taskInput');
             const text = input.value.trim();
             
             if (text !== '') {
                 tasks.push({ text: text, completed: false });
-                input.value = ''; // Kosongkan input
+                input.value = ''; // Reset kotak input
                 renderTasks();
             }
         }
 
-        // Fungsi menandai tugas selesai/belum selesai
-        function toggleTask(index) {
-            tasks[index].completed = !tasks[index].completed;
-            renderTasks();
-        }
-
-        // Fungsi menghapus tugas
-        function deleteTask(index) {
-            tasks.splice(index, 1);
-            renderTasks();
-        }
-
-        // Jalankan fungsi render pertama kali saat web dibuka
+        // Jalankan aplikasi pertama kali
         renderTasks();
     </script>
 </body>
